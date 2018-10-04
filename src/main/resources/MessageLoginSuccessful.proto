@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+/**
+* --java_out=../java/ MessageLoginSuccessful.proto
+*/
+
+// Опции для Java
+option java_package = "com.aime.game.netty.common.protobuf";
+option java_outer_classname = "MessageLoginSuccessfulProtos";
+
+// Опции для C#
+package aime.game.protobuf.protocol;
+option csharp_namespace = "Aime.Protobuf.Protocol";
+
+/**
+ * Ответ на удачный запрос при авторизации
+ * - первый экземпляр на matchmaking server
+ * - второй экземпляр пользователю
+ */
+message MessageLoginSuccessful {
+	string matchmaking_server = 1;
+	int32 port = 2;
+	string token_access = 3;
+	int32 token_expire = 4;
+}

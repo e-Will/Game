@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+/**
+* --java_out=../java/ MessageLoginRequest.proto
+*/
+
+// Опции для Java
+option java_package = "com.aime.game.netty.protobuf.protocol";
+option java_outer_classname = "MessageLoginRequestProtos";
+
+// Опции для C#
+package aime.game.protobuf.protocol;
+option csharp_namespace = "Aime.Protobuf.Protocol";
+
+/* Запрос на авторизацию на сервере */
+message MessageLoginRequest {
+	string login = 1;
+	string hash_password = 2;
+}

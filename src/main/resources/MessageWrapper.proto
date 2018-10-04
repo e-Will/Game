@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+/**
+* --java_out=../java/ MessageWrapper.proto
+*/
+
+// Опции для Java
+option java_package = "com.aime.game.netty.protobuf.protocol";
+option java_outer_classname = "MessageWrapperProtos";
+
+// Опции для C#
+package aime.game.protobuf.protocol;
+option csharp_namespace = "Aime.Protobuf.Protocol";
+
+/* Обертка для всех сообщений */
+message MessageWrapper {
+	int32 code = 1;
+	bytes msg = 2;
+}
