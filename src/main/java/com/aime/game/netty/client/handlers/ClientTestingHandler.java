@@ -15,8 +15,6 @@ import java.util.logging.Logger;
  */
 public class ClientTestingHandler extends SimpleChannelInboundHandler<MessageWrapperProtos.MessageWrapper> {
 
-    private static final Logger LOGGER = Logger.getLogger( ClientTestingHandler.class.getName() );
-
     @Override
     protected void channelRead0(ChannelHandlerContext context,
                                 MessageWrapperProtos.MessageWrapper message) throws Exception {
@@ -26,20 +24,20 @@ public class ClientTestingHandler extends SimpleChannelInboundHandler<MessageWra
         switch (message.getCode()) {
             // Login Successful
             case 1002:
-                LOGGER.log(Level.INFO, "Get successful login!\n");
+                System.out.println("Get successful login!\n");
 
                 // Разворачиваем сообщение из массива байтов
                 MessageLoginSuccessfulProtos.MessageLoginSuccessful successful =
                         MessageLoginSuccessfulProtos.MessageLoginSuccessful.parseFrom(message.getMsg());
 
-                LOGGER.log(Level.INFO,
+                System.out.println(
                         "We must reconnect to server: " + successful.getMatchmakingServer()
                                 + " with port " + successful.getPort()
                                 + ". Access token: " + successful.getTokenAccess()
                                 + " that expire " + successful.getTokenExpire() + " + 2 min.\n");
                 break;
 
-            default: LOGGER.log(Level.INFO, "Code: " + message.getCode() + " not processed!");
+            default: System.out.println("Code: " + message.getCode() + " not processed!");
         }
     }
 }

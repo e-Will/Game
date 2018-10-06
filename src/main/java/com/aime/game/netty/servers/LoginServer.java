@@ -1,5 +1,6 @@
 package com.aime.game.netty.servers;
 
+import com.aime.game.netty.common.handlers.UnpackHandler;
 import com.aime.game.netty.servers.initializers.LoginServerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.EventLoopGroup;
@@ -11,6 +12,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 
+import java.util.logging.Logger;
+
 /**
  * @author e-Will
  *
@@ -21,6 +24,8 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
  * - в случае ошибки, отклоняет запрос авторизации
  */
 public final class LoginServer {
+
+    private static Logger LOG = Logger.getLogger(LoginServer.class.getName());
 
     private final int _port;
     // https://netty.io/wiki/forked-tomcat-native.html
@@ -58,7 +63,10 @@ public final class LoginServer {
                     .handler(new LoggingHandler(LogLevel.INFO))
                     .childHandler(new LoginServerInitializer(sslContext));
 
+            LOG.info(">> SERVER START");
             bootstrap.bind(_port).sync().channel().closeFuture().sync();
+        } catch (Exception ex) {
+            LOG.warning("LoginServer except: " + ex.getMessage());
         } finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();

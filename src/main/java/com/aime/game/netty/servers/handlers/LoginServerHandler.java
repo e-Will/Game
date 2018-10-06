@@ -1,54 +1,43 @@
 package com.aime.game.netty.servers.handlers;
 
+import com.aime.game.netty.common.MessageEntity;
+import com.aime.game.netty.common.handlers.UnpackHandler;
 import com.aime.game.netty.common.protobuf.MessageLoginRequestProtos;
 import com.aime.game.netty.common.protobuf.MessageLoginSuccessfulProtos;
-import com.aime.game.netty.common.protobuf.MessageWrapperProtos;
-import java.sql.Timestamp;
-import java.util.UUID;
-
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 
-/**
- *
- */
-public class LoginServerHandler extends SimpleChannelInboundHandler<MessageWrapperProtos.MessageWrapper> {
+import java.sql.Timestamp;
+import java.util.UUID;
+import java.util.logging.Logger;
 
-    protected void channelRead0(ChannelHandlerContext context, MessageWrapperProtos.MessageWrapper message) throws Exception {
-        /**
-         * Читаем входящий поток тут
-         * походу...
-         */
+public class LoginServerHandler extends SimpleChannelInboundHandler<MessageEntity> {
 
-        System.out.print("Receive message with code: " + message.getCode() + "\n");
+    private static Logger LOG = Logger.getLogger(LoginServerHandler.class.getName());
 
-        // Если это MessageLoginRequest
-        if (message.getCode() == 1001) {
-            // Создаем из массива байтов
-            MessageLoginRequestProtos.MessageLoginRequest msg =
-                    MessageLoginRequestProtos.MessageLoginRequest.parseFrom(message.getMsg());
+    protected void channelRead0(ChannelHandlerContext ctx, MessageEntity message) throws Exception {
 
-            System.out.print("Get data:\nLogin: " + msg.getLogin() + "\nPassword: " + msg.getHashPassword() + "\n");
+        switch (message.getCommand()) {
+            case MessageEntity.Command.LOGIN_REQUEST:
+                MessageLoginRequestProtos.MessageLoginRequest msg =
+                        MessageLoginRequestProtos.MessageLoginRequest.parseFrom(message.getMessage());
 
-            // Если логин ewill и пароль qwerty
-            if (msg.getLogin().equals("ewill") && msg.getHashPassword().equals("qwerty")) {
-                MessageLoginSuccessfulProtos.MessageLoginSuccessful.Builder successfulBuilder =
-                        MessageLoginSuccessfulProtos.MessageLoginSuccessful.newBuilder();
+               LOG.info("Receive LoginRequest >> Login: " + msg.getLogin() + " & Password: " + msg.getHashPassword() + "\n");
 
-                successfulBuilder.setMatchmakingServer("192.168.0.255")
-                .setPort(48002)
-                .setTokenExpire((int) new Timestamp(System.currentTimeMillis()).getTime())
-                .setTokenAccess(UUID.randomUUID().toString());
+                // Если логин ewill и пароль qwerty
+                if (msg.getLogin().equals("ewill") && msg.getHashPassword().equals("qwerty")) {
+                    MessageLoginSuccessfulProtos.MessageLoginSuccessful.Builder successfulBuilder =
+                            MessageLoginSuccessfulProtos.MessageLoginSuccessful.newBuilder();
 
-                // Оборачиваем во Wrapper
-                MessageWrapperProtos.MessageWrapper.Builder builder =
-                        MessageWrapperProtos.MessageWrapper.newBuilder();
+                    successfulBuilder.setMatchmakingServer("192.168.0.255")
+                            .setPort(48002)
+                            .setTokenExpire((int) new Timestamp(System.currentTimeMillis()).getTime())
+                            .setTokenAccess(UUID.randomUUID().toString());
 
-                builder.setCode(1002) // success code
-                .setMsg(successfulBuilder.build().toByteString());
+                    ctx.writeAndFlush(new MessageEntity(MessageEntity.Command.LOGIN_SUCCESSFUL, successfulBuilder.build().toByteString()));
+                }
 
-                context.writeAndFlush(builder.build());
-            }
+                break;
         }
     }
 
@@ -72,6 +61,6 @@ public class LoginServerHandler extends SimpleChannelInboundHandler<MessageWrapp
 }
 
 /*
-* Проверить в консоле занятые порты
-*  netstat -aon | more
-*/
+ * Проверить в консоле занятые порты
+ *  netstat -aon | more
+ */

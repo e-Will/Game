@@ -1,6 +1,8 @@
 package com.aime.game.netty.servers.initializers;
 
+import com.aime.game.netty.common.handlers.UnpackHandler;
 import com.aime.game.netty.common.protobuf.MessageWrapperProtos;
+import com.aime.game.netty.common.handlers.PackHandler;
 import com.aime.game.netty.servers.handlers.LoginServerHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -23,22 +25,21 @@ public class LoginServerInitializer extends ChannelInitializer<SocketChannel> {
 
         ChannelPipeline pipeline = socketChannel.pipeline();
 
-        /**
+        /*
          * В этом месте настраивается повидение, что именно делать с пакетами и как их обрабатывать.
          */
 
-        /** При входящих пакетах **/
+        /* При входящих пакетах */
         // распостроняеться на входящие пакеты, т.к. унаследованны от ChannelInboundHandler
         pipeline.addLast(new ProtobufVarint32FrameDecoder());
-        pipeline.addLast(new ProtobufDecoder(
-                /* Наш сгенерированный Wrapper */
-                MessageWrapperProtos.MessageWrapper.getDefaultInstance()));
+        pipeline.addLast(new ProtobufDecoder(MessageWrapperProtos.MessageWrapper.getDefaultInstance())); /* Наш сгенерированный Wrapper */
+        pipeline.addLast(new UnpackHandler());
 
-        // При исходящих пакетах
+        /* При исходящих пакетах */
         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
         pipeline.addLast(new ProtobufEncoder());
+        pipeline.addLast(new PackHandler());
 
         pipeline.addLast(new LoginServerHandler());
-
     }
 }

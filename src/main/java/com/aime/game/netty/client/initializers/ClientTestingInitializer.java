@@ -1,6 +1,7 @@
 package com.aime.game.netty.client.initializers;
 
 import com.aime.game.netty.client.handlers.ClientTestingHandler;
+import com.aime.game.netty.common.handlers.PackHandler;
 import com.aime.game.netty.common.protobuf.MessageWrapperProtos;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -35,6 +36,7 @@ public class ClientTestingInitializer extends ChannelInitializer<SocketChannel> 
         // Для записи в поток (сверху вниз?)
         pipeline.addLast(new ProtobufVarint32LengthFieldPrepender());
         pipeline.addLast(new ProtobufEncoder());
+        pipeline.addLast(new PackHandler());
 
         pipeline.addLast(new ClientTestingHandler());
     }

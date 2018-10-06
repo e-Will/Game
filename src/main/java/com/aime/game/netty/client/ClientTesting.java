@@ -1,9 +1,8 @@
 package com.aime.game.netty.client;
 
 import com.aime.game.netty.client.initializers.ClientTestingInitializer;
+import com.aime.game.netty.common.MessageEntity;
 import com.aime.game.netty.common.protobuf.MessageLoginRequestProtos;
-import com.aime.game.netty.common.protobuf.MessageWrapperProtos;
-import com.sun.org.apache.bcel.internal.generic.INSTANCEOF;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -14,10 +13,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
-import javax.net.ssl.SSLException;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Scanner;
 
 /**
@@ -71,7 +66,7 @@ public class ClientTesting {
 
                 switch (scanner.nextInt()) {
                     case 1:
-                        channel.writeAndFlush(LoginRequest());
+                        LoginRequest(channel);
                         break;
 
                     default: break;
@@ -84,7 +79,7 @@ public class ClientTesting {
         }
     }
 
-    private MessageWrapperProtos.MessageWrapper LoginRequest() {
+    private void LoginRequest(Channel channel) {
         String login, password;
         Scanner scanner = new Scanner(System.in);
 
@@ -99,18 +94,13 @@ public class ClientTesting {
                 + "\' with l:" + login + " and p:" + password + "\n");
 
         // Создаем Message
-        MessageLoginRequestProtos.MessageLoginRequest.Builder builder =
-                MessageLoginRequestProtos.MessageLoginRequest.newBuilder();
+        MessageLoginRequestProtos.MessageLoginRequest result =
+                MessageLoginRequestProtos.MessageLoginRequest.newBuilder()
+                .setLogin(login)    // указываем логин
+                .setHashPassword(password)
+                .build(); // пароль, потом его нужно хешировать
 
-        builder.setLogin(login); // указываем логин
-        builder.setHashPassword(password); // пароль, потом его нужно хешировать
-
-        // 1001 - код события MessageLoginRequest
-        MessageWrapperProtos.MessageWrapper.Builder wrapperBuilder = MessageWrapperProtos.MessageWrapper.newBuilder()
-                .setCode(1001)
-                .setMsg(builder.build().toByteString()); // Все сообщения оборачиваются в один общий вид, для пересылки по сети
-
-        return wrapperBuilder.build();
+        System.out.println("Write in stream MessageEntity");
+        channel.writeAndFlush(new MessageEntity(MessageEntity.Command.LOGIN_REQUEST, result.toByteString()));
     }
-
 }
